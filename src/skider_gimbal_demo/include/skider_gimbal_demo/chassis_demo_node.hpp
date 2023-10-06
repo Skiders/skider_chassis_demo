@@ -1,0 +1,154 @@
+#pragma once
+
+#include <memory>
+#include <string>
+#include <functional>
+#include <chrono>
+
+#include <iostream>
+
+#include <Eigen/Eigen>
+#include <tf2/LinearMath/Matrix3x3.h>
+
+#include <rclcpp/rclcpp.hpp>
+
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+
+#include <skider_excutor/msg/chassis_command.hpp>
+#include <skider_excutor/msg/debug.hpp>
+#include <skider_excutor/msg/imu.hpp>
+#include <skider_excutor/msg/chassis_state.hpp>
+#include <skider_excutor/msg/gimbal_state.hpp>
+
+using namespace std::chrono_literals;
+
+class Limit{
+
+    public:
+        Limit(){
+
+        }
+        Limit(double min, double max){
+
+            max_ = max;
+            min_ = min;
+            out_ = 0;
+        }
+        
+        double get(double in){
+            
+            if(out_+in < min_){
+                out_ = min_;
+            }
+            else if(out_+in > max_){
+                out_ = max_;
+            }
+            else{
+                out_ += in;
+            }
+            return out_;
+        }
+    private:
+        double max_, min_;
+        double out_;
+
+};
+
+class PID{
+
+    public:
+        PID(){
+            
+        }
+        PID(double kp, double ki, double kd){
+
+            kp_ = kp;
+            ki_ = ki;
+            kd_ = kd;
+            err_ = 0;
+            err_last_ = 0;
+            command_ = 0;
+
+        }
+        double calculate(double in, double state_now){
+
+            err_ = in - state_now;
+            //std::cout<<"err_: "<<err_<<std::endl;
+            double i_sum_limit = i_sum_limit_.get(err_*ki_);
+            //std::cout<<"i_sum_limit: "<<i_sum_limit<<std::endl;
+            command_ = kp_*err_ + i_sum_limit + kd_*(err_-err_last_);
+
+            err_last_ = err_;
+
+            return command_;
+        }
+        Limit i_sum_limit_;
+
+    private:
+        double kp_, ki_, kd_;
+        double err_, err_last_;
+        double command_;
+
+};
+
+class ChassisControlerDemoNode
+{
+public:
+    explicit ChassisControlerDemoNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+    rclcpp::node_interfaces::NodeBaseInterface::SharedPtr get_node_base_interface() {
+        return chassis_controler_demo_node_->get_node_base_interface();
+    }
+
+private:
+    void joy_msg_callback(const sensor_msgs::msg::Joy & msg);
+    void imu_msg_callback(const skider_excutor::msg::Imu & msg);
+    void chassis_msg_callback(const skider_excutor::msg::ChassisState & msg);
+    void gimbal_msg_callback(const skider_excutor::msg::GimbalState & msg);
+    
+private:
+    rclcpp::Node::SharedPtr chassis_controler_demo_node_;
+    rclcpp::Subscription<skider_excutor::msg::Imu>::SharedPtr imu_subscription_;
+    rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscription_;
+    rclcpp::Subscription<skider_excutor::msg::ChassisState>::SharedPtr chassis_state_subscription_;
+    rclcpp::Subscription<skider_excutor::msg::GimbalState>::SharedPtr gimbal_state_subscription_;
+    rclcpp::Publisher<skider_excutor::msg::ChassisCommand>::SharedPtr chassis_command_publisher_;
+    rclcpp::Publisher<skider_excutor::msg::Debug>::SharedPtr debug_publisher_;
+    skider_excutor::msg::Debug debug_msg_;
+
+
+private:
+    double imu_yaw_;
+
+    
+    double vx_set_, vy_set_;
+    double vx_solve_, vy_solve_;
+
+    double chassis_speed_[4] = {0};
+
+
+    PID pid_follow_;
+    std::vector<double> pid_follow_params_;
+    // PID pid1_, pid2_, pid3_, pid4_;
+    std::vector<PID> pid_vec_;
+    std::vector<double> pid1_params_, pid2_params_, pid3_params_, pid4_params_;
+    //2-----battary-----1
+    //|                 |
+    //|                 |
+    //|                 |
+    //|                 |
+    //|                 |
+    //|                 |
+    //|                 |
+    //3-----------------4
+
+
+public:
+    int16_t chassis_state_[4] = {0};
+    double yaw_zero_angle_ = 7792, follow_w_;
+    
+    //当前yaw电机反馈值
+    double yaw_angle_;
+
+};
+
