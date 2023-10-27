@@ -1,5 +1,4 @@
 # 1 工程结构
-222
 ├── firmware: stm32固件，根据IRbot2022电控组云台框架进行构建 https://github.com/Qylann/gimbal-standard  \
 └── src \
 &emsp;&emsp;├── skider_interface: skider执行层和指令层自定义通信接口    \
