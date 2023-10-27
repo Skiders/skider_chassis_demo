@@ -10,7 +10,7 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
     std::map<std::string, std::string> topic_name_params {
         {"imu_raw_publish_topic_name", ""},
         {"sbus_publish_topic_name", ""},
-        {"shooter_output_subscribe_topic_name", ""},
+        // {"shooter_output_subscribe_topic_name", ""},
     };
 
     std::map<std::string, int> transporter_params {
@@ -26,7 +26,7 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
     // topic name
     gimbal_hw_node_->get_parameter<std::string>("imu_raw_publish_topic_name", imu_raw_publish_topic_name_);
     gimbal_hw_node_->get_parameter<std::string>("sbus_publish_topic_name", sbus_publish_topic_name_);
-    gimbal_hw_node_->get_parameter<std::string>("shooter_output_subscribe_topic_name", shooter_output_subscribe_topic_name_);
+    // gimbal_hw_node_->get_parameter<std::string>("shooter_output_subscribe_topic_name", shooter_output_subscribe_topic_name_);
 
     gimbal_hw_node_->declare_parameters("", transporter_params);
     // transporter parameter
@@ -42,8 +42,7 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
     gimbal_hw_node_->get_parameter<int>("gimbal_interface_usb_write_timeout", gimbal_interface_usb_write_timeout_);
 
 
-
-
+    send_call_backgroup_ = gimbal_hw_node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Init imu_raw Publisher");
     imu_raw_publisher_ = gimbal_hw_node_->create_publisher<sensor_msgs::msg::Imu>(
@@ -65,26 +64,28 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
     gimbal_command_subscription_ = gimbal_hw_node_->create_subscription<skider_excutor::msg::GimbalCommand>(
         "/skider/command/gimbal", 10, std::bind(&GimbalHWNode::gimbal_command_msg_callback, this, std::placeholders::_1));
 
-    RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Subscribe Shooter Output");
-    shooter_output_subscription_ = gimbal_hw_node_->create_subscription<skider_excutor::msg::ShooterOutput>(
-        shooter_output_subscribe_topic_name_, 10, std::bind(&GimbalHWNode::shooter_output_msg_callback, this, std::placeholders::_1));
+    // RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Subscribe Shooter Output");
+    // shooter_output_subscription_ = gimbal_hw_node_->create_subscription<skider_excutor::msg::ShooterOutput>(
+    //     shooter_output_subscribe_topic_name_, 10, std::bind(&GimbalHWNode::shooter_output_msg_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Subscribe Chassis Command");
     chassis_command_subscription_ = gimbal_hw_node_->create_subscription<skider_excutor::msg::ChassisCommand>(
         "/skider/command/chassis", 10, std::bind(&GimbalHWNode::chassis_command_msg_callback, this, std::placeholders::_1));
 
-    RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Init Timer 1000Hz");
-    timer_1000Hz_ = gimbal_hw_node_->create_wall_timer(1ms, std::bind(&GimbalHWNode::loop_1000Hz, this));
+    RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Init Timer ");
+    timer_10000Hz_ = gimbal_hw_node_->create_wall_timer(100us, std::bind(&GimbalHWNode::loop_10000Hz, this), send_call_backgroup_);
 
+    //when the period is 100us, the actual frequency is 1000HZ. it is weried.
+    timer_1000Hz_ = gimbal_hw_node_->create_wall_timer(100us, std::bind(&GimbalHWNode::loop_1000Hz, this), send_call_backgroup_);
 
     // shooter 
-    RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Command Topic Timeout Callback");
-    gimbal_command_offline_timer_ = gimbal_hw_node_->create_wall_timer(20ms, [this]() {
-        gimbal_command_timeout_ = true;
-    });
-    shooter_command_offline_timer_ = gimbal_hw_node_->create_wall_timer(20ms, [this]() {
-        shooter_command_timeout_ = true;
-    });
+    // RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Command Topic Timeout Callback");
+    // gimbal_command_offline_timer_ = gimbal_hw_node_->create_wall_timer(20ms, [this]() {
+    //     gimbal_command_timeout_ = true;
+    // });
+    // shooter_command_offline_timer_ = gimbal_hw_node_->create_wall_timer(20ms, [this]() {
+    //     shooter_command_timeout_ = true;
+    // });
 
 
 
@@ -110,13 +111,12 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
 }
 
 
-void GimbalHWNode::loop_1000Hz()
+void GimbalHWNode::loop_10000Hz()
 {
+    //---usb---
     transport_package::GimbalHWReceivePackage package;
-
     int read_size = transporter_->read((unsigned char *)&package, 32);
     // RCLCPP_INFO(gimbal_hw_node_->get_logger(), "read size : %d", read_size);
-
     if (read_size == 32) {
 
         sensor_msgs::msg::Imu imu_raw;
@@ -144,147 +144,184 @@ void GimbalHWNode::loop_1000Hz()
         sbus_publisher_->publish(sbus);
     }
 
+    
+    //---can0---
+    
     uint id = 0;
-    u_char buf[8] = {0},buf0[2]={0};
+    u_char buf[8] = {0},buf_temp[2]={0};
     u_char dlc = 0;
-    int16_t speed;
 
-    this->can_.receive(id, buf, dlc);
+    for(int i=0;i<5;i++){
 
-    skider_excutor::msg::ChassisState chassis_state_msg;
+        this->can0_.receive(id, buf, dlc);
+        std::cout<<"can0 receive id: "<<std::hex<<id<<std::endl;
 
-    switch(id){
-        case WHEEL1:{
+        switch(id){
 
-            buf0[0]=buf[3];
-            buf0[1]=buf[2];
-            memcpy(&speed,buf0,2);
-            speed_[0] = speed;
 
-            //std::cout<<"speed_[0]: "<<speed_[0]<<std::endl;
-            // std::cout<<"(int16_t)buf[2]: "<<(int16_t)buf[2]<<std::endl;
-            // std::cout<<"(int16_t)buf[3]: "<<(int16_t)buf[3]<<std::endl;
+            case YAW:{
 
-            
-            break;}
+                buf_temp[0]=buf[1];
+                buf_temp[1]=buf[0];
+                memcpy(&(gimbal_state_msg_.yaw_angle),buf_temp,2);
+                
 
-        case WHEEL2:{
+                break;}
+            case PITCH:{
 
-            buf0[0]=buf[3];
-            buf0[1]=buf[2];
-            memcpy(&speed,buf0,2);
-            speed_[1] = speed;
+                buf_temp[0]=buf[1];
+                buf_temp[1]=buf[0];
+                memcpy(&(gimbal_state_msg_.pitch_angle),buf_temp,2);
+                
 
-            break;}
+                break;}
+            case AMMOR:{
+                //std::cout<<gimbal_hw_node_->get_clock()->now().nanoseconds()<<std::endl;
 
-        case WHEEL3:{
+                buf_temp[0]=buf[3];
+                buf_temp[1]=buf[2];
+                memcpy(&(gimbal_state_msg_.ammor_speed),buf_temp,2);
+                
 
-            buf0[0]=buf[3];
-            buf0[1]=buf[2];
-            memcpy(&speed,buf0,2);
-            speed_[2] = speed;
+                break;}
+            case AMMOL:{
 
-            break;}
+                // std::cout<<gimbal_hw_node_->get_clock()->now().nanoseconds()<<std::endl;
 
-        case WHEEL4:{
+                buf_temp[0]=buf[3];
+                buf_temp[1]=buf[2];
+                memcpy(&(gimbal_state_msg_.ammol_speed),buf_temp,2);
+                
 
-            buf0[0]=buf[3];
-            buf0[1]=buf[2];
-            memcpy(&speed,buf0,2);
-            speed_[3] = speed;
+                break;}
+            case ROTOR:{
 
-            break;}
+                buf_temp[0]=buf[3];
+                buf_temp[1]=buf[2];
+                memcpy(&(gimbal_state_msg_.rotor_speed),buf_temp,2);
+                
 
-        case YAW:{
+                break;}
 
-            buf0[0]=buf[1];
-            buf0[1]=buf[0];
-            memcpy(&(gimbal_state_msg_.angle),buf0,2);
-            std::cout<<111<<std::endl;
-            
-
-            break;}
-
-        default:
-            break;
+            default:
+                break;
+        }
     }
-    chassis_state_msg.speed.push_back(speed_[0]);
-    chassis_state_msg.speed.push_back(speed_[1]);
-    chassis_state_msg.speed.push_back(speed_[2]);
-    chassis_state_msg.speed.push_back(speed_[3]);
-
-    chassis_state_msg.header.frame_id = "chassis_state";
-    chassis_state_msg.header.stamp = gimbal_hw_node_->get_clock()->now();
-    chassis_state_publisher_->publish(chassis_state_msg);
-
     gimbal_state_msg_.header.frame_id = "gimbal_state_";
     gimbal_state_msg_.header.stamp = gimbal_hw_node_->get_clock()->now();
     gimbal_state_publisher_->publish(gimbal_state_msg_);
 
-    // command send
-    transmit_package_.header._SOF_ = 0x55;
-    transmit_package_.header.frame_type = 0x01;     // frame type: SCM
-    transmit_package_.header.frame_size = 24;
-    transmit_package_.header._EOF_ = 0xAA;
+    //---can1---
+    // uint id = 0;
+    // u_char buf[8] = {0},buf_temp[2]={0};
+    // u_char dlc = 0;
 
-    transmit_package_.command._SOF_ = 0x66;
-    transmit_package_.command._EOF_ = 0x88;
-    if (gimbal_command_timeout_ == true) {
-        transmit_package_.command.gimbal_state = 0x00;
-    }
-    if (shooter_command_timeout_ == true) {
-        transmit_package_.command.shooter_state = 0x00;
-    }
+
+    int16_t speed;
+    for(int i=0;i<4;i++)
+    {
     
-    transporter_->write((unsigned char *)&transmit_package_, sizeof(transport_package::GimbalHWTransmitPackage));
+        this->can1_.receive(id, buf, dlc);
+        std::cout<<"can1 receive id: "<<std::hex<<id<<std::endl;
 
-    // this->can_.send(COMMAND, buf_yaw_, sizeof(buf_yaw_));
-    // std::cout<<"can send: "<<this->can_.send(COMMAND, buf_yaw_, sizeof(buf_yaw_))<<std::endl;
+        // skider_excutor::msg::ChassisState chassis_state_msg_;
 
-    bool can_return = this->can_.send(CHASSIS, buf_chassis_, sizeof(buf_chassis_));
-    std::cout<<"can send: "<<can_return<<std::endl;
+        switch(id){
+            case WHEEL1:{
 
-    buf_chassis_[8] = {0};
+                buf_temp[0]=buf[3];
+                buf_temp[1]=buf[2];
+                memcpy(&speed,buf_temp,2);
+                // speed_[0] = speed;
+                chassis_state_msg_.speed[0] = speed;
 
+                //std::cout<<"speed_[0]: "<<speed_[0]<<std::endl;
+                //std::cout<<"(int16_t)buf[2]: "<<(int16_t)buf[2]<<std::endl;
+                //std::cout<<"(int16_t)buf[3]: "<<(int16_t)buf[3]<<std::endl;
+                //std::cout<<gimbal_hw_node_->get_clock()->now().nanoseconds()<<std::endl;
+                
+                break;}
+
+            case WHEEL2:{
+
+                buf_temp[0]=buf[3];
+                buf_temp[1]=buf[2];
+                memcpy(&speed,buf_temp,2);
+                // speed_[1] = speed;
+                chassis_state_msg_.speed[1] = speed;
+
+
+                //std::cout<<"speed_[1]: "<<speed_[1]<<std::endl;
+                //std::cout<<"(int16_t)buf[2]: "<<(int16_t)buf[2]<<std::endl;
+                //std::cout<<"(int16_t)buf[3]: "<<(int16_t)buf[3]<<std::endl;
+                break;}
+
+            case WHEEL3:{
+
+                buf_temp[0]=buf[3];
+                buf_temp[1]=buf[2];
+                memcpy(&speed,buf_temp,2);
+                // speed_[2] = speed;
+                chassis_state_msg_.speed[2] = speed;
+
+                break;}
+
+            case WHEEL4:{
+
+                buf_temp[0]=buf[3];
+                buf_temp[1]=buf[2];
+                memcpy(&speed,buf_temp,2);
+                // speed_[3] = speed;
+                chassis_state_msg_.speed[3] = speed;
+
+
+                break;}
+
+
+            default:
+                break;
+        }
+    }
+
+    chassis_state_msg_.header.frame_id = "chassis_state";
+    chassis_state_msg_.header.stamp = gimbal_hw_node_->get_clock()->now();
+    chassis_state_publisher_->publish(chassis_state_msg_);
+    
 }
 
-
-
-void GimbalHWNode::shooter_output_msg_callback(const skider_excutor::msg::ShooterOutput & msg)
+void GimbalHWNode::loop_1000Hz()
 {
-    shooter_command_offline_timer_->reset();
-    shooter_command_timeout_ = false;
 
-    if (msg.enable == true) {
-        transmit_package_.command.shooter_state = 0x01;
-        transmit_package_.command.rotor_kp = msg.rotor_kp;
-        transmit_package_.command.rotor_command = msg.rotor_speed;
-        transmit_package_.command.ammol_kp = msg.ammol_kp;
-        transmit_package_.command.ammol_command = msg.ammol_speed;
-        transmit_package_.command.ammor_kp = msg.ammor_kp;
-        transmit_package_.command.ammor_command = msg.ammor_speed;
-    }
-    else {
-        transmit_package_.command.shooter_state = 0x00;
-        transmit_package_.command.rotor_kp = 0;
-        transmit_package_.command.rotor_command = 0;
-        transmit_package_.command.ammol_kp = 0;
-        transmit_package_.command.ammol_command = 0;
-        transmit_package_.command.ammor_kp = 0;
-        transmit_package_.command.ammor_command = 0;
-    }
+
+
+    this->can0_.send(GIMBAL_COMMAND, buf_gimbal_, sizeof(buf_gimbal_));
+    this->can0_.send(SHOOT_COMMAND, buf_shooter_, sizeof(buf_shooter_));
+    this->can1_.send(CHASSIS_COMMAND, buf_chassis_, sizeof(buf_chassis_));
+    buf_gimbal_[8] = {0};
+    buf_shooter_[8] = {0};
+    buf_chassis_[8] = {0};
+    //std::cout<<stamp_.stamp.sec<<stamp_.stamp.nanosec<<"-"<<gimbal_hw_node_->get_clock()->now().nanoseconds()<<std::endl;
 }
+
+
 
 void GimbalHWNode::gimbal_command_msg_callback(const skider_excutor::msg::GimbalCommand & msg){
 
-    buf_yaw_[8] = {0};
-    buf_yaw_[0] = (u_char)(msg.yaw_current>>8);
-    buf_yaw_[1] = (u_char)(msg.yaw_current);
-    buf_yaw_[2] = (u_char)(msg.pitch_current>>8);
-    buf_yaw_[3] = (u_char)(msg.pitch_current);
+    buf_gimbal_[8] = {0};
+    buf_gimbal_[0] = (u_char)(msg.yaw_current>>8);
+    buf_gimbal_[1] = (u_char)(msg.yaw_current);
+    buf_gimbal_[2] = (u_char)(msg.pitch_current>>8);
+    buf_gimbal_[3] = (u_char)(msg.pitch_current);
 
-    //memcpy(buf_yaw_, &msg.yaw_current, sizeof(msg.yaw_current));
-    // this->can_.send(COMMAND, buf_yaw_, sizeof(buf_yaw_));
+    buf_shooter_[8] = {0};
+    buf_shooter_[0] = (u_char)(msg.ammor_current>>8);
+    buf_shooter_[1] = (u_char)(msg.ammor_current);
+    buf_shooter_[2] = (u_char)(msg.ammol_current>>8);
+    buf_shooter_[3] = (u_char)(msg.ammol_current);
+    buf_shooter_[4] = (u_char)(msg.rotor_current>>8);
+    buf_shooter_[5] = (u_char)(msg.rotor_current);
+    //memcpy(buf_gimbal_, &msg.yaw_current, sizeof(msg.yaw_current));
+
 }
 
 void GimbalHWNode::chassis_command_msg_callback(const skider_excutor::msg::ChassisCommand & msg){
@@ -300,10 +337,7 @@ void GimbalHWNode::chassis_command_msg_callback(const skider_excutor::msg::Chass
         buf_chassis_[2*i+1] = (u_char)(msg.current[i]);
 
     }
-    // this->can_.send(CHASSIS, buf_chassis_, sizeof(buf_chassis_));
-
-
-
+    stamp_.stamp=msg.header.stamp;
 
 }
 

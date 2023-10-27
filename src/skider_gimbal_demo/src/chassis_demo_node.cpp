@@ -51,7 +51,10 @@ ChassisControlerDemoNode::ChassisControlerDemoNode(const rclcpp::NodeOptions & o
     debug_publisher_ = chassis_controler_demo_node_->create_publisher<skider_excutor::msg::Debug>(
         chassis_debug_publisg_topic_name_, 10);
 
+    timer_1000Hz_ = chassis_controler_demo_node_->create_wall_timer(100us, std::bind(&ChassisControlerDemoNode::loop_10000Hz, this));
+
     RCLCPP_INFO(chassis_controler_demo_node_->get_logger(), "Finish Init");
+    
 
     vx_set_ = 0;
     vy_set_ = 0;
@@ -67,7 +70,7 @@ ChassisControlerDemoNode::ChassisControlerDemoNode(const rclcpp::NodeOptions & o
     PID pid4(pid4_params_[0], pid4_params_[1], pid4_params_[2]);
     pid4.i_sum_limit_ = Limit(-1000, 1000);
 
-    PID pid_follow_(pid_follow_params_[0], pid_follow_params_[1], pid_follow_params_[2]);
+    pid_follow_ = PID(pid_follow_params_[0], pid_follow_params_[1], pid_follow_params_[2]);
     pid_follow_.i_sum_limit_ = Limit(-1000, 1000);
 
     pid_vec_.push_back(pid1);
@@ -93,11 +96,11 @@ inline double get_relative_angle(double angle_aim, double angle_ref)
 {
     double reletive_angle = angle_aim - angle_ref;
 
-    while (reletive_angle > M_PI) {
-        reletive_angle -= 2*M_PI;
+    while (reletive_angle > 4096) {
+        reletive_angle -= 2*4096;
     }
-    while (reletive_angle < -M_PI) {
-        reletive_angle += 2*M_PI;
+    while (reletive_angle < -4096) {
+        reletive_angle += 2*4096;
     }
 
     return reletive_angle;
@@ -128,45 +131,43 @@ inline double aim_limut(double angle_aim, double max, double min)
 }
 
 
-
-void ChassisControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg)
+void ChassisControlerDemoNode::loop_10000Hz()
 {
-    // std::cout<<"pid1_kp_: "<<pid1_params_[0]<<std::endl;
-    // std::cout<<"pid1_ki_: "<<pid1_params_[1]<<std::endl;
-    // std::cout<<"pid1_kd_: "<<pid1_params_[2]<<std::endl;
 
-
+    // command send
     skider_excutor::msg::ChassisCommand chassis_msg;
     chassis_msg.header.set__frame_id("Controler Chassis Command");
-    chassis_msg.header.set__stamp(chassis_controler_demo_node_->get_clock()->now());
-
+    //chassis_msg.header.set__stamp(chassis_controler_demo_node_->get_clock()->now());
+    chassis_msg.header.stamp=stamp_.stamp;
     double chassis_current[4];
 
-    if ((msg.buttons[1] == true)  ||  (msg.buttons[2] == true)){        //TODO
+    if ((button1_ == true)  ||  (button2_ == true)){        //TODO
 
-        std::cout<<"calculating: "<<std::endl;
-
-        vx_set_ = msg.axes[1]*9000;
-        vy_set_ = -msg.axes[0]*9000;
-
-        vx_solve_ = vx_set_;
-        vy_solve_ = vy_set_;
+        //std::cout<<"calculating: "<<std::endl;
 
 
-        follow_w_ = pid_follow_.calculate(yaw_zero_angle_, yaw_angle_);
+        double yaw_relative = get_relative_angle(yaw_zero_angle_, yaw_angle_);
+        double yaw_angle_set_ = yaw_angle_ + yaw_relative;
 
-        chassis_speed_[0] = (-vx_solve_ - vy_solve_ - follow_w_);
-        chassis_speed_[1] = (vx_solve_ - vy_solve_ - follow_w_);
+        follow_w_ = pid_follow_.calculate(yaw_angle_set_, yaw_angle_);
+        // std::cout<<"yaw_angle_set_: "<<yaw_angle_set_<<std::endl;
+        // std::cout<<"yaw_angle_: "<<yaw_angle_<<std::endl;
+        // std::cout<<"follow_w_: "<<follow_w_<<std::endl;
+
+
+        chassis_speed_[0] = (-vx_solve_ - vy_solve_ + follow_w_);
+        chassis_speed_[1] = (vx_solve_ - vy_solve_ + follow_w_);
         chassis_speed_[2] = (vx_solve_ + vy_solve_ + follow_w_);
         chassis_speed_[3] = (-vx_solve_ + vy_solve_ + follow_w_);
 
         // std::cout<<"chassis_speed_[0]: "<<chassis_speed_[0]<<std::endl;
+        // std::cout<<vx_solve_<<"\t"<<vy_solve_<<"\t"<<follow_w_<<std::endl;
 
         for(int i=0; i<4; i++){
 
-            chassis_current[i] = pid_vec_[i].calculate(chassis_speed_[i], chassis_state_[i]);
+            chassis_current[i] = pid_vec_[i].calculate_robust(chassis_speed_[i], chassis_state_[i]);
             chassis_current[i] = speed_limit(chassis_current[i], 16384);
-            
+            //std::cout<<i<<":"<<chassis_speed_[i]<<" "<<chassis_state_[i]<<std::endl;
             chassis_msg.current.push_back(chassis_current[i]);
 
         }
@@ -175,7 +176,7 @@ void ChassisControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & ms
     }
     else{
        
-        std::cout<<"weak: "<<std::endl;
+        // std::cout<<"weak: "<<std::endl;
 
         for(int i=0; i<4; i++){
             chassis_msg.current.push_back(0);
@@ -185,14 +186,32 @@ void ChassisControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & ms
     chassis_command_publisher_->publish(chassis_msg);
     debug_msg_.header.stamp = chassis_controler_demo_node_->get_clock()->now();
     debug_msg_.header.frame_id = "debug";
+
+
+}
+
+
+void ChassisControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg)
+{
+    button1_= msg.buttons[1];
+    button2_= msg.buttons[2];
+    if ((msg.buttons[1] == true)  ||  (msg.buttons[2] == true)){       
+
+        vx_set_ = msg.axes[1]*6000;
+        vy_set_ = -msg.axes[0]*6000;
+        vx_solve_ = vx_set_;
+        vy_solve_ = vy_set_;
+    }
+    else{
+       
+        vx_solve_ = 0;
+        vy_solve_ = 0;
+    }
+
     int debug_index = 0;
     debug_msg_.input1 = chassis_speed_[debug_index];
     debug_msg_.state1 = chassis_state_[debug_index];
-    debug_msg_.output1 = chassis_current[debug_index];
     debug_publisher_->publish(debug_msg_);
-
- 
-
 }
 
 
@@ -206,7 +225,8 @@ void ChassisControlerDemoNode::imu_msg_callback(const skider_excutor::msg::Imu &
 
 void ChassisControlerDemoNode::chassis_msg_callback(const skider_excutor::msg::ChassisState & msg)
 {
-
+    //std::cout<<msg.speed[0]<<"\t"<<msg.speed[1]<<"\t"<<msg.speed[2]<<"\t"<<msg.speed[3]<<std::endl;
+    stamp_=msg.header;
     chassis_state_[0] = msg.speed[0];
     chassis_state_[1] = msg.speed[1];
     chassis_state_[2] = msg.speed[2];
@@ -219,12 +239,16 @@ void ChassisControlerDemoNode::gimbal_msg_callback(const skider_excutor::msg::Gi
 {
 
     //TOCHECK
+    
+    yaw_angle_ = msg.yaw_angle;
 
-    yaw_angle_ = msg.angle;
-    if(yaw_angle_ < (yaw_zero_angle_ - 8192/2)){
+    //不用    
+    pitch_angle_ = msg.pitch_angle;
+    ammor_speed_ = msg.ammor_speed;
+    ammol_speed_ = msg.ammol_speed;
+    rotor_speed_ = msg.rotor_speed;
+    // std::cout<<"yaw_angle_: "<<yaw_angle_<<std::endl;
 
-        yaw_angle_ += 8192/2;
-    }
 
 }
 

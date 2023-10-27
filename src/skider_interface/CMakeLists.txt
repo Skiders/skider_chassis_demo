@@ -17,7 +17,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ChassisCommand.msg" 
   "msg/GimbalCommand.msg" 
   "msg/Referee.msg" 
-  "msg/ShooterCommand.msg" 
+  # "msg/ShooterCommand.msg" 
   DEPENDENCIES builtin_interfaces std_msgs
 )
 

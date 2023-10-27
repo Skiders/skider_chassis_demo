@@ -69,36 +69,36 @@ typedef struct GimbalHWReceivePackage
     uint8_t             EndFrame;
 } GimbalHWReceivePackage;
 
-typedef struct
-{
-    struct header
-    {
-        uint8_t         _SOF_;
-        uint8_t         frame_type;
-        uint8_t         frame_size;
-        uint8_t         _EOF_;
-    } header;
+// typedef struct
+// {
+//     struct header
+//     {
+//         uint8_t         _SOF_;
+//         uint8_t         frame_type;
+//         uint8_t         frame_size;
+//         uint8_t         _EOF_;
+//     } header;
     
-    struct command
-    {
-        uint8_t         _SOF_;
-        uint8_t         gimbal_state;
-        uint8_t         shooter_state;
-        uint16_t        yaw_kp;
-        int16_t         yaw_command;
-        uint16_t        pitch_kp;
-        int16_t         pitch_command;
-        uint16_t        rotor_kp;
-        int16_t         rotor_command;
-        uint16_t        ammol_kp;
-        int16_t         ammol_command;
-        uint16_t        ammor_kp;
-        int16_t         ammor_command;
-        uint8_t         _EOF_;
-    } command;
+//     struct command
+//     {
+//         uint8_t         _SOF_;
+//         uint8_t         gimbal_state;
+//         uint8_t         shooter_state;
+//         uint16_t        yaw_kp;
+//         int16_t         yaw_command;
+//         uint16_t        pitch_kp;
+//         int16_t         pitch_command;
+//         uint16_t        rotor_kp;
+//         int16_t         rotor_command;
+//         uint16_t        ammol_kp;
+//         int16_t         ammol_command;
+//         uint16_t        ammor_kp;
+//         int16_t         ammor_command;
+//         uint8_t         _EOF_;
+//     } command;
     
     
-} GimbalHWTransmitPackage;
+// } GimbalHWTransmitPackage;
 
 #pragma pack(pop)
 

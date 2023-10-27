@@ -23,8 +23,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Imu.msg" 
   "msg/RefereeShooter.msg" 
   "msg/Sbus.msg" 
-  "msg/ShooterOutput.msg"
-  "msg/YawJoint.msg"
+  # "msg/ShooterOutput.msg"
+  # "msg/YawJoint.msg"
   DEPENDENCIES builtin_interfaces std_msgs sensor_msgs
 )
 

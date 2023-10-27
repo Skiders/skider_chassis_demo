@@ -1,5 +1,5 @@
 std_msgs/Header header
 # rpm
-float64[] speed
+float64[4] speed
 
 

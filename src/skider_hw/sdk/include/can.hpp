@@ -14,17 +14,22 @@
 #include <chrono>
 #include <iostream>
 
-// #define CAN_NAME "can0"
-#define YAW 0x205 //200+电调,204+电调
-// #define PITCH 0x206
-// #define COMMAND 0x1FF //200+电调,204+电调
 
-#define CAN_NAME "can0"
+#define GIMBAL_CAN "can0"
+#define AMMOR 0x201
+#define AMMOL 0x202
+#define ROTOR 0x203
+#define YAW 0x205 
+#define PITCH 0x206
+#define GIMBAL_COMMAND 0x1FF 
+#define SHOOT_COMMAND 0x200
+
+#define CHASSIS_CAN "can1"
 #define WHEEL1 0x201
 #define WHEEL2 0x202
 #define WHEEL3 0x203
 #define WHEEL4 0x204
-#define CHASSIS 0x200
+#define CHASSIS_COMMAND 0x200
 
 
 namespace transporter_sdk
@@ -35,6 +40,13 @@ namespace transporter_sdk
         int socket_fd;
         struct sockaddr_can addr;
         struct ifreq interface_request;
+
+    public:
+        // const char* can_name_ ;
+        // const char* can_name_ = "can0";
+
+        // can_name_ = "can0";
+        int can_id_;
 
     public:
         /**
@@ -52,7 +64,10 @@ namespace transporter_sdk
          */
         int send(uint id, u_char *buf, u_char dlc);
 
+        // Can(const char* can_name);
+        Can(int can_id);
         Can();
+
         ~Can();
 
         enum CanError

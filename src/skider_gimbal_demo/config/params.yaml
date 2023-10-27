@@ -1,24 +1,31 @@
 # launch.py->node->name
-# gimbal_demo_node:
-#   ros__parameters:
-#     yaw_in_kp: 0.0   #8000
-#     yaw_in_ki: 0.0
-#     yaw_in_kd: 0.0
-#     yaw_out_kp: 0.0  #10.0
-#     yaw_out_ki: 0.0
-#     yaw_out_kd: 0.0
-#     pitch_in_kp: 8000.0
-#     pitch_in_ki: 0.0
-#     pitch_in_kd: 0.0
-#     pitch_out_kp: 10.0
-#     pitch_out_ki: 0.0
-#     pitch_out_kd: 0.0
+gimbal_demo_node:
+  ros__parameters:
+    # yaw_in_kp: 8000.0   #8000.0
+    # yaw_in_ki: 0.0
+    # yaw_in_kd: 0.0
+    # yaw_out_kp: 10.0  #10.0
+    # yaw_out_ki: 0.0
+    # yaw_out_kd: 0.0
+    # pitch_in_kp: 8000.0
+    # pitch_in_ki: 0.0
+    # pitch_in_kd: 0.0
+    # pitch_out_kp: 10.0
+    # pitch_out_ki: 0.0
+    # pitch_out_kd: 0.0
+    pid_yaw_in: [8000.0, 0.0, 0.0]
+    pid_yaw_out: [10.0, 0.0, 0.0]
+    pid_pitch_in: [8000.0, 0.0, 0.0]
+    pid_pitch_out: [10.0, 0.0, 0.0]
+    pid_ammor: [1.0, 0.0, 0.0]
+    pid_ammol: [1.0, 0.0, 0.0]
+    pid_rotor: [1.0, 0.0, 0.1]
 chassis_demo_node:
   ros__parameters:
-    pid1: [0.18, 0.00000, 0.0]
-    pid2: [0.18, 0.000, 0.0]
-    pid3: [0.18, 0.000, 0.0]
-    pid4: [0.17, 0.000, 0.0]  #0.55 - 0.59
-    pid_follow: [0.18, 0.000, 0.0]
+    pid1: [1.8, 0.00, 0.3]
+    pid2: [1.8, 0.00, 0.3]
+    pid3: [1.8, 0.00, 0.3]
+    pid4: [1.8, 0.00, 0.3]  #0.55 - 0.59
+    pid_follow: [1.5, 0.000, 0.3]
 
     
