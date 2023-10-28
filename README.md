@@ -36,6 +36,8 @@ sudo chmod 777 /dev/bus/usb/003/*
 然后依次launch skider_hw、skider_sensor、skider_gimbal_demo
 
 
+检查参数文件是否正确读取
+
 source install/setup.bash
 
 ros2 launch skider_hw skider_hw.launch.py
