@@ -19,7 +19,7 @@ gimbal_demo_node:
     pid_pitch_out: [10.0, 0.0, 0.0]
     pid_ammor: [1.0, 0.0, 0.0]
     pid_ammol: [1.0, 0.0, 0.0]
-    pid_rotor: [1.0, 0.0, 0.1]
+    pid_rotor: [3.0, 0.0, 0.1]
 chassis_demo_node:
   ros__parameters:
     pid1: [1.8, 0.00, 0.3]

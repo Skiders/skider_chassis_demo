@@ -1,3 +1,6 @@
+# 0 you should use galactic instead of foxy!!
+
+
 # 1 工程结构
 ├── firmware: stm32固件，根据IRbot2022电控组云台框架进行构建 https://github.com/Qylann/gimbal-standard  \
 └── src \

@@ -15,7 +15,7 @@
 #include <iostream>
 
 
-#define GIMBAL_CAN "can0"
+#define GIMBAL_CAN "can1"
 #define AMMOR 0x201
 #define AMMOL 0x202
 #define ROTOR 0x203
@@ -24,7 +24,7 @@
 #define GIMBAL_COMMAND 0x1FF 
 #define SHOOT_COMMAND 0x200
 
-#define CHASSIS_CAN "can1"
+#define CHASSIS_CAN "can0"
 #define WHEEL1 0x201
 #define WHEEL2 0x202
 #define WHEEL3 0x203

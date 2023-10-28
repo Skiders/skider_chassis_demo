@@ -23,6 +23,7 @@ ChassisControlerDemoNode::ChassisControlerDemoNode(const rclcpp::NodeOptions & o
     chassis_controler_demo_node_->get_parameter<std::vector<double>>("pid4", pid4_params_);
     chassis_controler_demo_node_->get_parameter<std::vector<double>>("pid_follow", pid_follow_params_);
 
+    std::cout<<" pid1_params_[0]: "<<pid1_params_[0]<<" pid1_params_[1]: "<<pid1_params_[1]<<" pid1_params_[2]: "<<pid1_params_[2]<<std::endl;
 
 
     std::string imu_subscribe_topic_name_("/skider/imu/data");

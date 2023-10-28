@@ -31,7 +31,7 @@ GimbalControlerDemoNode::GimbalControlerDemoNode(const rclcpp::NodeOptions & opt
     gimbal_controler_demo_node_->get_parameter<std::vector<double>>("pid_ammol", pid_ammol_params_);
     gimbal_controler_demo_node_->get_parameter<std::vector<double>>("pid_rotor", pid_rotor_params_);
 
-    std::cout<<"pid_yaw_in_params_[0]: "<<pid_yaw_in_params_[0]<<"pid_yaw_in_params_[1]: "<<pid_yaw_in_params_[1]<<"pid_yaw_in_params_[2]: "<<pid_yaw_in_params_[2]<<std::endl;
+    std::cout<<" pid_yaw_in_params_[0]: "<<pid_yaw_in_params_[0]<<" pid_yaw_in_params_[1]: "<<pid_yaw_in_params_[1]<<" pid_yaw_in_params_[2]: "<<pid_yaw_in_params_[2]<<std::endl;
 
     std::string imu_subscribe_topic_name_("/skider/imu/data");
     RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Subscribe IMU data : \"%s\"", imu_subscribe_topic_name_.c_str());
@@ -69,7 +69,7 @@ GimbalControlerDemoNode::GimbalControlerDemoNode(const rclcpp::NodeOptions & opt
 
     //TOCHECK
     ammo_goal_speed_ = 7000;
-    rotor_goal_speed_ = 1000;
+    rotor_goal_speed_ = 2000;
 
     // this->pid_yaw_in_ = PID(yaw_in_kp_, yaw_in_ki_, yaw_in_kd_);
     // this->pid_yaw_in_.i_sum_limit_ = Limit(-5000, 5000) ;
@@ -205,7 +205,7 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
     }
     else if(msg.buttons[0] != true){
 
-            gimbal_command_msg_.rotor_current = this->pid_rotor_.calculate(0, rotor_speed_);
+            gimbal_command_msg_.rotor_current = 0;//this->pid_rotor_.calculate(0, rotor_speed_);
     }
 
 

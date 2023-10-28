@@ -13,7 +13,7 @@ def generate_launch_description():
                 name='gimbal_demo_node',
                 output='screen',
                 # parameters=[os.path.join(get_package_share_directory('skider_gimbal_demo'), 'config', 'params.yaml')],
-                parameters=["/home/nuc12/Desktop/control/src/skider_gimbal_demo/config/params.yaml"],
+                parameters=["/home/nuc/Desktop/control/src/skider_gimbal_demo/config/params.yaml"],
                 
             ),
             Node(
@@ -21,8 +21,8 @@ def generate_launch_description():
                 executable='chassis_demo_node',
                 name='chassis_demo_node',
                 output='screen',
-                # parameters=[os.path.join(get_package_share_directory('skider_chassis_demo'), 'config', 'params.yaml')],
-                parameters=["/home/nuc12/Desktop/control/src/skider_gimbal_demo/config/params.yaml"],
+                # parameters=[os.path.join(get_package_share_directory('skider_gimbal_demo'), 'config', 'params.yaml')],
+                parameters=["/home/nuc/Desktop/control/src/skider_gimbal_demo/config/params.yaml"],
                 
             )
         ]
