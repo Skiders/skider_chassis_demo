@@ -253,7 +253,7 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
     }
     else if(msg.buttons[0] != true){
 
-            gimbal_command_msg_.rotor_current = 0;//this->pid_rotor_.calculate(0, rotor_speed_);
+            gimbal_command_msg_.rotor_current = 0;
     }
 
 
@@ -271,6 +271,7 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
     }
     // debug_publisher_->publish(debug_msg_);
 
+    //std::cout<<"follow_init_: "<<follow_init_<<std::endl;
 
     gimbal_command_publisher_->publish(gimbal_command_msg_);
     gimbal_command_msg_.yaw_current = 0;
