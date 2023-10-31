@@ -12,13 +12,18 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ChassisCommand.msg" 
+  "msg/ChassisState.msg" 
+  "msg/Debug.msg" 
   "msg/GimbalCommand.msg" 
-  "msg/Referee.msg" 
-  # "msg/ShooterCommand.msg" 
-  DEPENDENCIES builtin_interfaces std_msgs
+  "msg/GimbalState.msg" 
+  "msg/Imu.msg" 
+  "msg/RefereeShooter.msg" 
+  "msg/Sbus.msg" 
+  DEPENDENCIES builtin_interfaces std_msgs sensor_msgs
 )
 
 if(BUILD_TESTING)

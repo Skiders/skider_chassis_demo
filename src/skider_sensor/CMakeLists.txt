@@ -19,7 +19,6 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(skider_interface REQUIRED)
-find_package(skider_excutor REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -39,7 +38,6 @@ ament_target_dependencies(imu_sensor_node
   rclcpp
   rclcpp_components
   skider_interface
-  skider_excutor
   sensor_msgs
   geometry_msgs
   tf2
@@ -61,9 +59,7 @@ ament_target_dependencies(remote_sensor_node
   rclcpp
   rclcpp_components
   skider_interface
-  skider_excutor
   sensor_msgs
-  # visualization_msgs
 
 )
 

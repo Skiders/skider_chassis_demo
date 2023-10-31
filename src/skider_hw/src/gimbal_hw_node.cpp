@@ -10,7 +10,6 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
     std::map<std::string, std::string> topic_name_params {
         {"imu_raw_publish_topic_name", ""},
         {"sbus_publish_topic_name", ""},
-        // {"shooter_output_subscribe_topic_name", ""},
     };
 
     std::map<std::string, int> transporter_params {
@@ -26,7 +25,6 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
     // topic name
     gimbal_hw_node_->get_parameter<std::string>("imu_raw_publish_topic_name", imu_raw_publish_topic_name_);
     gimbal_hw_node_->get_parameter<std::string>("sbus_publish_topic_name", sbus_publish_topic_name_);
-    // gimbal_hw_node_->get_parameter<std::string>("shooter_output_subscribe_topic_name", shooter_output_subscribe_topic_name_);
 
     gimbal_hw_node_->declare_parameters("", transporter_params);
     // transporter parameter
@@ -49,27 +47,23 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
         imu_raw_publish_topic_name_, 10);
 
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Init sbus Publisher");
-    sbus_publisher_ = gimbal_hw_node_->create_publisher<skider_excutor::msg::Sbus>(
+    sbus_publisher_ = gimbal_hw_node_->create_publisher<skider_interface::msg::Sbus>(
         sbus_publish_topic_name_, 10);
 
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Init chassis state Publisher");
-    chassis_state_publisher_ = gimbal_hw_node_->create_publisher<skider_excutor::msg::ChassisState>(
+    chassis_state_publisher_ = gimbal_hw_node_->create_publisher<skider_interface::msg::ChassisState>(
         "/skider/chassis_state", 10);
 
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Init gimbal state Publisher");
-    gimbal_state_publisher_ = gimbal_hw_node_->create_publisher<skider_excutor::msg::GimbalState>(
+    gimbal_state_publisher_ = gimbal_hw_node_->create_publisher<skider_interface::msg::GimbalState>(
         "/skider/gimbal_state", 10);
 
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Subscribe Gimbal Command");
-    gimbal_command_subscription_ = gimbal_hw_node_->create_subscription<skider_excutor::msg::GimbalCommand>(
+    gimbal_command_subscription_ = gimbal_hw_node_->create_subscription<skider_interface::msg::GimbalCommand>(
         "/skider/command/gimbal", 10, std::bind(&GimbalHWNode::gimbal_command_msg_callback, this, std::placeholders::_1));
 
-    // RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Subscribe Shooter Output");
-    // shooter_output_subscription_ = gimbal_hw_node_->create_subscription<skider_excutor::msg::ShooterOutput>(
-    //     shooter_output_subscribe_topic_name_, 10, std::bind(&GimbalHWNode::shooter_output_msg_callback, this, std::placeholders::_1));
-
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Subscribe Chassis Command");
-    chassis_command_subscription_ = gimbal_hw_node_->create_subscription<skider_excutor::msg::ChassisCommand>(
+    chassis_command_subscription_ = gimbal_hw_node_->create_subscription<skider_interface::msg::ChassisCommand>(
         "/skider/command/chassis", 10, std::bind(&GimbalHWNode::chassis_command_msg_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Init Timer ");
@@ -78,14 +72,7 @@ GimbalHWNode::GimbalHWNode(const rclcpp::NodeOptions & options)
     //when the period is 100us, the actual frequency is 1000HZ. it is weried.
     timer_1000Hz_ = gimbal_hw_node_->create_wall_timer(100us, std::bind(&GimbalHWNode::loop_1000Hz, this), send_call_backgroup_);
 
-    // shooter 
-    // RCLCPP_INFO(gimbal_hw_node_->get_logger(), "Command Topic Timeout Callback");
-    // gimbal_command_offline_timer_ = gimbal_hw_node_->create_wall_timer(20ms, [this]() {
-    //     gimbal_command_timeout_ = true;
-    // });
-    // shooter_command_offline_timer_ = gimbal_hw_node_->create_wall_timer(20ms, [this]() {
-    //     shooter_command_timeout_ = true;
-    // });
+
 
 
 
@@ -134,7 +121,7 @@ void GimbalHWNode::loop_10000Hz()
         imu_raw_publisher_->publish(imu_raw);
 
 
-        skider_excutor::msg::Sbus sbus;
+        skider_interface::msg::Sbus sbus;
         sbus.header.set__frame_id("joy_sbus_frame");
         sbus.header.set__stamp(gimbal_hw_node_->get_clock()->now());
         for (uint i = 0; i < 18; i++) {
@@ -224,7 +211,6 @@ void GimbalHWNode::loop_10000Hz()
         this->can1_.receive(id, buf, dlc);
         std::cout<<"can1 receive id: "<<std::hex<<id<<std::endl;
 
-        // skider_excutor::msg::ChassisState chassis_state_msg_;
 
         switch(id){
             case WHEEL1:{
@@ -305,7 +291,7 @@ void GimbalHWNode::loop_1000Hz()
 
 
 
-void GimbalHWNode::gimbal_command_msg_callback(const skider_excutor::msg::GimbalCommand & msg){
+void GimbalHWNode::gimbal_command_msg_callback(const skider_interface::msg::GimbalCommand & msg){
 
     buf_gimbal_[8] = {0};
     buf_gimbal_[0] = (u_char)(msg.yaw_current>>8);
@@ -324,7 +310,7 @@ void GimbalHWNode::gimbal_command_msg_callback(const skider_excutor::msg::Gimbal
 
 }
 
-void GimbalHWNode::chassis_command_msg_callback(const skider_excutor::msg::ChassisCommand & msg){
+void GimbalHWNode::chassis_command_msg_callback(const skider_interface::msg::ChassisCommand & msg){
 
     buf_chassis_[8] = {0};
     for(int i=0; i<4; i++){

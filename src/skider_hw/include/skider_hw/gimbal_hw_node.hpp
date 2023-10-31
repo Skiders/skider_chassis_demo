@@ -6,12 +6,11 @@
 #include <chrono>
 
 #include <rclcpp/rclcpp.hpp>
-#include <skider_excutor/msg/sbus.hpp>
-// #include <skider_excutor/msg/shooter_output.hpp>
-#include <skider_excutor/msg/gimbal_command.hpp>
-#include <skider_excutor/msg/chassis_state.hpp>
-#include <skider_excutor/msg/chassis_command.hpp>
-#include <skider_excutor/msg/gimbal_state.hpp>
+#include <skider_interface/msg/sbus.hpp>
+#include <skider_interface/msg/gimbal_command.hpp>
+#include <skider_interface/msg/chassis_state.hpp>
+#include <skider_interface/msg/chassis_command.hpp>
+#include <skider_interface/msg/gimbal_state.hpp>
 
 #include <sensor_msgs/msg/imu.hpp>
 
@@ -32,10 +31,9 @@ public:
 private:
     void loop_10000Hz();
     void loop_1000Hz();
-    // void shooter_output_msg_callback(const skider_excutor::msg::ShooterOutput & msg);
 
-    void gimbal_command_msg_callback(const skider_excutor::msg::GimbalCommand & msg);
-    void chassis_command_msg_callback(const skider_excutor::msg::ChassisCommand & msg);
+    void gimbal_command_msg_callback(const skider_interface::msg::GimbalCommand & msg);
+    void chassis_command_msg_callback(const skider_interface::msg::ChassisCommand & msg);
 
 
 
@@ -49,31 +47,25 @@ private:
     //
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_raw_publisher_;
     
-    rclcpp::Publisher<skider_excutor::msg::Sbus>::SharedPtr sbus_publisher_;
+    rclcpp::Publisher<skider_interface::msg::Sbus>::SharedPtr sbus_publisher_;
 
-    rclcpp::Publisher<skider_excutor::msg::ChassisState>::SharedPtr chassis_state_publisher_;
+    rclcpp::Publisher<skider_interface::msg::ChassisState>::SharedPtr chassis_state_publisher_;
 
-    rclcpp::Publisher<skider_excutor::msg::GimbalState>::SharedPtr gimbal_state_publisher_;
+    rclcpp::Publisher<skider_interface::msg::GimbalState>::SharedPtr gimbal_state_publisher_;
 
     
-    rclcpp::Subscription<skider_excutor::msg::GimbalCommand>::SharedPtr gimbal_command_subscription_;
+    rclcpp::Subscription<skider_interface::msg::GimbalCommand>::SharedPtr gimbal_command_subscription_;
 
-    rclcpp::Subscription<skider_excutor::msg::ChassisCommand>::SharedPtr chassis_command_subscription_;
+    rclcpp::Subscription<skider_interface::msg::ChassisCommand>::SharedPtr chassis_command_subscription_;
 
-    // rclcpp::Subscription<skider_excutor::msg::ShooterOutput>::SharedPtr shooter_output_subscription_;
 
     std::shared_ptr<transporter_sdk::TransporterInterface> transporter_;
 
-    // transport_package::GimbalHWTransmitPackage   transmit_package_;
 
-    // rclcpp::TimerBase::SharedPtr gimbal_command_offline_timer_;
-    // rclcpp::TimerBase::SharedPtr shooter_command_offline_timer_;
 
 
 private:
-    // protive topic timeout
-    // bool gimbal_command_timeout_;
-    // bool shooter_command_timeout_;
+
 
     std_msgs::msg::Header stamp_;
 
@@ -81,7 +73,6 @@ private:
     // params
     std::string imu_raw_publish_topic_name_;
     std::string sbus_publish_topic_name_;
-    // std::string shooter_output_subscribe_topic_name_;
     int gimbal_interface_usb_vid_;
     int gimbal_interface_usb_pid_;
     int gimbal_interface_usb_read_endpoint_;
@@ -92,7 +83,6 @@ private:
     transporter_sdk::Can can0_{transporter_sdk::Can(0)};
     transporter_sdk::Can can1_{transporter_sdk::Can(1)};
 
-    // transporter_sdk::Can can0_(int 0);
 
 
     u_char buf_gimbal_[8];
@@ -100,10 +90,10 @@ private:
     u_char buf_chassis_[8];
 
 public:
-    // skider_excutor::msg::ChassisState chassis_state_msg_;
+    // skider_interface::msg::ChassisState chassis_state_msg_;
     double speed_[4];
-    skider_excutor::msg::GimbalState gimbal_state_msg_;
-    skider_excutor::msg::ChassisState chassis_state_msg_;
+    skider_interface::msg::GimbalState gimbal_state_msg_;
+    skider_interface::msg::ChassisState chassis_state_msg_;
 
     
 

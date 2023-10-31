@@ -28,7 +28,7 @@ ChassisControlerDemoNode::ChassisControlerDemoNode(const rclcpp::NodeOptions & o
 
     std::string imu_subscribe_topic_name_("/skider/imu/data");
     RCLCPP_INFO(chassis_controler_demo_node_->get_logger(), "Subscribe IMU data : \"%s\"", imu_subscribe_topic_name_.c_str());
-    imu_subscription_ = chassis_controler_demo_node_->create_subscription<skider_excutor::msg::Imu>(
+    imu_subscription_ = chassis_controler_demo_node_->create_subscription<skider_interface::msg::Imu>(
         imu_subscribe_topic_name_, 10, std::bind(&ChassisControlerDemoNode::imu_msg_callback, this, std::placeholders::_1));
 
     std::string joy_subscribe_topic_name_("/skider/joy/data");
@@ -36,20 +36,20 @@ ChassisControlerDemoNode::ChassisControlerDemoNode(const rclcpp::NodeOptions & o
     joy_subscription_ = chassis_controler_demo_node_->create_subscription<sensor_msgs::msg::Joy>(
         joy_subscribe_topic_name_, 10, std::bind(&ChassisControlerDemoNode::joy_msg_callback, this, std::placeholders::_1));
 
-    chassis_state_subscription_ = chassis_controler_demo_node_->create_subscription<skider_excutor::msg::ChassisState>(
+    chassis_state_subscription_ = chassis_controler_demo_node_->create_subscription<skider_interface::msg::ChassisState>(
         "/skider/chassis_state", 10, std::bind(&ChassisControlerDemoNode::chassis_msg_callback, this, std::placeholders::_1));
 
-    gimbal_state_subscription_ = chassis_controler_demo_node_->create_subscription<skider_excutor::msg::GimbalState>(
+    gimbal_state_subscription_ = chassis_controler_demo_node_->create_subscription<skider_interface::msg::GimbalState>(
         "/skider/gimbal_state", 10, std::bind(&ChassisControlerDemoNode::gimbal_msg_callback, this, std::placeholders::_1));
         
     std::string chassis_command_publish_topic_name_("/skider/command/chassis");
     RCLCPP_INFO(chassis_controler_demo_node_->get_logger(), "Init Chassis Command Publisher : ");
-    chassis_command_publisher_ = chassis_controler_demo_node_->create_publisher<skider_excutor::msg::ChassisCommand>(
+    chassis_command_publisher_ = chassis_controler_demo_node_->create_publisher<skider_interface::msg::ChassisCommand>(
         chassis_command_publish_topic_name_, 10);
 
     std::string chassis_debug_publisg_topic_name_("/skider/debug");
     RCLCPP_INFO(chassis_controler_demo_node_->get_logger(), "Init Debug Publisher : ");
-    debug_publisher_ = chassis_controler_demo_node_->create_publisher<skider_excutor::msg::Debug>(
+    debug_publisher_ = chassis_controler_demo_node_->create_publisher<skider_interface::msg::Debug>(
         chassis_debug_publisg_topic_name_, 10);
 
     timer_1000Hz_ = chassis_controler_demo_node_->create_wall_timer(100us, std::bind(&ChassisControlerDemoNode::loop_10000Hz, this));
@@ -136,7 +136,7 @@ void ChassisControlerDemoNode::loop_10000Hz()
 {
 
     // command send
-    skider_excutor::msg::ChassisCommand chassis_msg;
+    skider_interface::msg::ChassisCommand chassis_msg;
     chassis_msg.header.set__frame_id("Controler Chassis Command");
     //chassis_msg.header.set__stamp(chassis_controler_demo_node_->get_clock()->now());
     chassis_msg.header.stamp=stamp_.stamp;
@@ -220,7 +220,7 @@ void ChassisControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & ms
 }
 
 
-void ChassisControlerDemoNode::imu_msg_callback(const skider_excutor::msg::Imu & msg)
+void ChassisControlerDemoNode::imu_msg_callback(const skider_interface::msg::Imu & msg)
 {
     imu_yaw_ = msg.imu_yaw;
 
@@ -228,7 +228,7 @@ void ChassisControlerDemoNode::imu_msg_callback(const skider_excutor::msg::Imu &
 
 }
 
-void ChassisControlerDemoNode::chassis_msg_callback(const skider_excutor::msg::ChassisState & msg)
+void ChassisControlerDemoNode::chassis_msg_callback(const skider_interface::msg::ChassisState & msg)
 {
     //std::cout<<msg.speed[0]<<"\t"<<msg.speed[1]<<"\t"<<msg.speed[2]<<"\t"<<msg.speed[3]<<std::endl;
     stamp_=msg.header;
@@ -240,7 +240,7 @@ void ChassisControlerDemoNode::chassis_msg_callback(const skider_excutor::msg::C
 
 }
 
-void ChassisControlerDemoNode::gimbal_msg_callback(const skider_excutor::msg::GimbalState & msg)
+void ChassisControlerDemoNode::gimbal_msg_callback(const skider_interface::msg::GimbalState & msg)
 {
 
     //TOCHECK

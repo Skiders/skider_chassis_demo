@@ -16,7 +16,6 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(skider_interface REQUIRED)
-find_package(skider_excutor REQUIRED)
 
 find_package(Eigen3 REQUIRED)
 
@@ -32,7 +31,6 @@ ament_target_dependencies(gimbal_demo_node
   rclcpp
   rclcpp_components
   skider_interface
-  skider_excutor
   sensor_msgs
   Eigen3
 )
@@ -49,7 +47,6 @@ ament_target_dependencies(chassis_demo_node
   rclcpp
   rclcpp_components
   skider_interface
-  skider_excutor
   sensor_msgs
   Eigen3
 )

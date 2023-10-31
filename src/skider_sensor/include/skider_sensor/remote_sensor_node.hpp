@@ -17,7 +17,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/joy.hpp>
-#include <skider_excutor/msg/sbus.hpp>
+#include <skider_interface/msg/sbus.hpp>
 
 #include "sbus_remote.hpp"
 
@@ -31,12 +31,12 @@ public:
         return remote_sensor_node_->get_node_base_interface();
     }
 private:
-    void sbus_msg_callback(const skider_excutor::msg::Sbus & msg) const;
+    void sbus_msg_callback(const skider_interface::msg::Sbus & msg) const;
     void loop_1000Hz();
 private:
     rclcpp::Node::SharedPtr remote_sensor_node_;
     rclcpp::TimerBase::SharedPtr timer_1000Hz_;
-    rclcpp::Subscription<skider_excutor::msg::Sbus>::SharedPtr sbus_subscription_;
+    rclcpp::Subscription<skider_interface::msg::Sbus>::SharedPtr sbus_subscription_;
     rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr joy_publisher_;
     std::shared_ptr<sensor_sdk::remote::RemoteBase> remote_;
 

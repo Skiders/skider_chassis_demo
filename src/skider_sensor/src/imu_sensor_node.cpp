@@ -64,7 +64,7 @@ ImuSensorNode::ImuSensorNode(const rclcpp::NodeOptions & options)
         imu_raw_sbuscribe_topic_name_, 10, std::bind(&ImuSensorNode::imu_raw_msg_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(imu_sensor_node_->get_logger(), "Init IMU data Publisher");
-    imu_publisher_ = imu_sensor_node_->create_publisher<skider_excutor::msg::Imu>(
+    imu_publisher_ = imu_sensor_node_->create_publisher<skider_interface::msg::Imu>(
         imu_data_public_topic_name_, 10);
     
     if (publish_tf_ == true) {
@@ -101,7 +101,7 @@ void ImuSensorNode::loop_1000Hz()
     imu_data.linear_acceleration.set__y(imu_ahrs_processer_->imu_raw_.accl_y);
     imu_data.linear_acceleration.set__z(imu_ahrs_processer_->imu_raw_.accl_z);
 
-    skider_excutor::msg::Imu imu_msg;
+    skider_interface::msg::Imu imu_msg;
     imu_msg.header.stamp = imu_sensor_node_->get_clock()->now();
     imu_msg.header.frame_id = "imu_data";
     imu_msg.imu = imu_data;

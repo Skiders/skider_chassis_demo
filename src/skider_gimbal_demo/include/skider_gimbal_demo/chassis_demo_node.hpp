@@ -16,11 +16,11 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
-#include <skider_excutor/msg/chassis_command.hpp>
-#include <skider_excutor/msg/debug.hpp>
-#include <skider_excutor/msg/imu.hpp>
-#include <skider_excutor/msg/chassis_state.hpp>
-#include <skider_excutor/msg/gimbal_state.hpp>
+#include <skider_interface/msg/chassis_command.hpp>
+#include <skider_interface/msg/debug.hpp>
+#include <skider_interface/msg/imu.hpp>
+#include <skider_interface/msg/chassis_state.hpp>
+#include <skider_interface/msg/gimbal_state.hpp>
 //#include "gimbal_demo_node.hpp"
 
 using namespace std::chrono_literals;
@@ -118,20 +118,20 @@ public:
 private:
     void loop_10000Hz();
     void joy_msg_callback(const sensor_msgs::msg::Joy & msg);
-    void imu_msg_callback(const skider_excutor::msg::Imu & msg);
-    void chassis_msg_callback(const skider_excutor::msg::ChassisState & msg);
-    void gimbal_msg_callback(const skider_excutor::msg::GimbalState & msg);
+    void imu_msg_callback(const skider_interface::msg::Imu & msg);
+    void chassis_msg_callback(const skider_interface::msg::ChassisState & msg);
+    void gimbal_msg_callback(const skider_interface::msg::GimbalState & msg);
     
 private:
     rclcpp::TimerBase::SharedPtr timer_1000Hz_;
     rclcpp::Node::SharedPtr chassis_controler_demo_node_;
-    rclcpp::Subscription<skider_excutor::msg::Imu>::SharedPtr imu_subscription_;
+    rclcpp::Subscription<skider_interface::msg::Imu>::SharedPtr imu_subscription_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscription_;
-    rclcpp::Subscription<skider_excutor::msg::ChassisState>::SharedPtr chassis_state_subscription_;
-    rclcpp::Subscription<skider_excutor::msg::GimbalState>::SharedPtr gimbal_state_subscription_;
-    rclcpp::Publisher<skider_excutor::msg::ChassisCommand>::SharedPtr chassis_command_publisher_;
-    rclcpp::Publisher<skider_excutor::msg::Debug>::SharedPtr debug_publisher_;
-    skider_excutor::msg::Debug debug_msg_;
+    rclcpp::Subscription<skider_interface::msg::ChassisState>::SharedPtr chassis_state_subscription_;
+    rclcpp::Subscription<skider_interface::msg::GimbalState>::SharedPtr gimbal_state_subscription_;
+    rclcpp::Publisher<skider_interface::msg::ChassisCommand>::SharedPtr chassis_command_publisher_;
+    rclcpp::Publisher<skider_interface::msg::Debug>::SharedPtr debug_publisher_;
+    skider_interface::msg::Debug debug_msg_;
 
 
 private:

@@ -12,7 +12,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <sensor_msgs/msg/imu.hpp>
-#include <skider_excutor/msg/imu.hpp>
+#include <skider_interface/msg/imu.hpp>
 
 
 #include "mahony_ahrs.hpp"
@@ -35,7 +35,7 @@ private:
     rclcpp::Node::SharedPtr imu_sensor_node_;
     rclcpp::TimerBase::SharedPtr timer_1000Hz_;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_raw_subscription_;
-    rclcpp::Publisher<skider_excutor::msg::Imu>::SharedPtr imu_publisher_;
+    rclcpp::Publisher<skider_interface::msg::Imu>::SharedPtr imu_publisher_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> imu_tf_broadcaster_;
     std::shared_ptr<sensor_sdk::imu::AHRSInterface> imu_ahrs_processer_;
 

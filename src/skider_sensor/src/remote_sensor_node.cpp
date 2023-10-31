@@ -32,7 +32,7 @@ RemoteSensorNode::RemoteSensorNode(const rclcpp::NodeOptions & options)
 
 
     RCLCPP_INFO(remote_sensor_node_->get_logger(), "Sbuscribe sbus");
-    sbus_subscription_ = remote_sensor_node_->create_subscription<skider_excutor::msg::Sbus>(
+    sbus_subscription_ = remote_sensor_node_->create_subscription<skider_interface::msg::Sbus>(
         joy_sbus_sbuscribe_topic_name_, 10, std::bind(&RemoteSensorNode::sbus_msg_callback, this, std::placeholders::_1));
     
 
@@ -63,7 +63,7 @@ void RemoteSensorNode::loop_1000Hz()
 
 }
 
-void RemoteSensorNode::sbus_msg_callback(const skider_excutor::msg::Sbus & msg) const
+void RemoteSensorNode::sbus_msg_callback(const skider_interface::msg::Sbus & msg) const
 {
     unsigned char sbus_buffer[18];
     for (uint i = 0; i < 18; i++) {

@@ -15,11 +15,10 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
-// #include <skider_excutor/msg/shooter_output.hpp>
-#include <skider_excutor/msg/gimbal_command.hpp>
-#include <skider_excutor/msg/debug.hpp>
-#include <skider_excutor/msg/imu.hpp>
-#include <skider_excutor/msg/gimbal_state.hpp>
+#include <skider_interface/msg/gimbal_command.hpp>
+#include <skider_interface/msg/debug.hpp>
+#include <skider_interface/msg/imu.hpp>
+#include <skider_interface/msg/gimbal_state.hpp>
 
 using namespace std::chrono_literals;
 
@@ -102,19 +101,18 @@ public:
 
 private:
     void joy_msg_callback(const sensor_msgs::msg::Joy & msg);
-    void imu_msg_callback(const skider_excutor::msg::Imu & msg);
-    void gimbal_msg_callback(const skider_excutor::msg::GimbalState & msg);
+    void imu_msg_callback(const skider_interface::msg::Imu & msg);
+    void gimbal_msg_callback(const skider_interface::msg::GimbalState & msg);
     
 private:
     rclcpp::Node::SharedPtr gimbal_controler_demo_node_;
-    rclcpp::Subscription<skider_excutor::msg::Imu>::SharedPtr imu_subscription_;
+    rclcpp::Subscription<skider_interface::msg::Imu>::SharedPtr imu_subscription_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscription_;
-    // rclcpp::Publisher<skider_excutor::msg::ShooterOutput>::SharedPtr shooter_output_publisher_;
-    rclcpp::Publisher<skider_excutor::msg::GimbalCommand>::SharedPtr gimbal_command_publisher_;
-    rclcpp::Subscription<skider_excutor::msg::GimbalState>::SharedPtr gimbal_state_subscription_;
+    rclcpp::Publisher<skider_interface::msg::GimbalCommand>::SharedPtr gimbal_command_publisher_;
+    rclcpp::Subscription<skider_interface::msg::GimbalState>::SharedPtr gimbal_state_subscription_;
 
-    rclcpp::Publisher<skider_excutor::msg::Debug>::SharedPtr debug_publisher_;
-    skider_excutor::msg::Debug debug_msg_;
+    rclcpp::Publisher<skider_interface::msg::Debug>::SharedPtr debug_publisher_;
+    skider_interface::msg::Debug debug_msg_;
 
 
 private:
@@ -154,7 +152,7 @@ private:
     //double imu_yaw_zero_ = 0;
 
 public:
-    skider_excutor::msg::GimbalCommand gimbal_command_msg_;
+    skider_interface::msg::GimbalCommand gimbal_command_msg_;
 
 
     

@@ -39,7 +39,7 @@ GimbalControlerDemoNode::GimbalControlerDemoNode(const rclcpp::NodeOptions & opt
 
     std::string imu_subscribe_topic_name_("/skider/imu/data");
     RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Subscribe IMU data : \"%s\"", imu_subscribe_topic_name_.c_str());
-    imu_subscription_ = gimbal_controler_demo_node_->create_subscription<skider_excutor::msg::Imu>(
+    imu_subscription_ = gimbal_controler_demo_node_->create_subscription<skider_interface::msg::Imu>(
         imu_subscribe_topic_name_, 10, std::bind(&GimbalControlerDemoNode::imu_msg_callback, this, std::placeholders::_1));
 
     std::string joy_subscribe_topic_name_("/skider/joy/data");
@@ -50,15 +50,15 @@ GimbalControlerDemoNode::GimbalControlerDemoNode(const rclcpp::NodeOptions & opt
 
     std::string gimbal_command_publish_topic_name_("/skider/command/gimbal");
     RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Init Gimbal Command Publisher : ");
-    gimbal_command_publisher_ = gimbal_controler_demo_node_->create_publisher<skider_excutor::msg::GimbalCommand>(
+    gimbal_command_publisher_ = gimbal_controler_demo_node_->create_publisher<skider_interface::msg::GimbalCommand>(
         gimbal_command_publish_topic_name_, 10);
 
     std::string gimbal_debug_publisg_topic_name_("/skider/debug");
     RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Init Debug Publisher : ");
-    debug_publisher_ = gimbal_controler_demo_node_->create_publisher<skider_excutor::msg::Debug>(
+    debug_publisher_ = gimbal_controler_demo_node_->create_publisher<skider_interface::msg::Debug>(
         gimbal_debug_publisg_topic_name_, 10);
 
-    gimbal_state_subscription_ = gimbal_controler_demo_node_->create_subscription<skider_excutor::msg::GimbalState>(
+    gimbal_state_subscription_ = gimbal_controler_demo_node_->create_subscription<skider_interface::msg::GimbalState>(
         "/skider/gimbal_state", 10, std::bind(&GimbalControlerDemoNode::gimbal_msg_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Finish Init");
@@ -269,7 +269,7 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
 }
 
 
-void GimbalControlerDemoNode::imu_msg_callback(const skider_excutor::msg::Imu & msg)
+void GimbalControlerDemoNode::imu_msg_callback(const skider_interface::msg::Imu & msg)
 {
 
     imu_yaw_ = msg.imu_yaw;
@@ -281,7 +281,7 @@ void GimbalControlerDemoNode::imu_msg_callback(const skider_excutor::msg::Imu & 
 
 }
 
-void GimbalControlerDemoNode::gimbal_msg_callback(const skider_excutor::msg::GimbalState & msg)
+void GimbalControlerDemoNode::gimbal_msg_callback(const skider_interface::msg::GimbalState & msg)
 {
 
     //不用 

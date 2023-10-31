@@ -14,7 +14,7 @@
 
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
-  <depend>skider_excutor</depend>
+  <depend>skider_interface</depend>
 
 
   <export>
