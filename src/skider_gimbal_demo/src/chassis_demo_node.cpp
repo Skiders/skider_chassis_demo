@@ -142,10 +142,10 @@ void ChassisControlerDemoNode::loop_10000Hz()
     chassis_msg.header.stamp=stamp_.stamp;
     double chassis_current[4];
 
-    if ((button1_ == true)  ||  (button2_ == true)){        //TODO
+    if ((button1_ == true)  ||  (button2_ == true)){       
 
         //std::cout<<"calculating: "<<std::endl;
-
+        //增加init判断
 
         double yaw_relative = get_relative_angle(yaw_zero_angle_, yaw_angle_);
         double yaw_angle_set_ = yaw_angle_ + yaw_relative;

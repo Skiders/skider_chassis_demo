@@ -1,8 +1,10 @@
 # launch.py->node->name
 gimbal_demo_node:
   ros__parameters:
-    pid_yaw_in: [8000.0, 0.0, 0.0]
-    pid_yaw_out: [10.0, 0.0, 0.0]
+    pid_yaw_remote_in: [8000.0, 0.0, 0.0] 
+    pid_yaw_remote_out: [10.0, 0.0, 0.0]  
+    pid_yaw_init_in: [1.8, 0.0, 0.0]  
+    pid_yaw_init_out: [2.0, 0.0, 0.0]  
     pid_pitch_in: [8000.0, 0.0, 0.0]
     pid_pitch_out: [10.0, 0.0, 0.0]
     pid_ammor: [1.0, 0.0, 0.0]

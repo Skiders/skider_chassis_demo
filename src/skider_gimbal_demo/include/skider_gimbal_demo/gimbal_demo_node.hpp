@@ -125,11 +125,13 @@ private:
     double yaw_angle_set_;
     double pitch_angle_set_;
 
-    PID pid_yaw_in_, pid_yaw_out_;
+    PID pid_yaw_remote_in_, pid_yaw_remote_out_;
+    PID pid_yaw_init_in_, pid_yaw_init_out_;
     PID pid_pitch_in_, pid_pitch_out_;
     PID pid_ammor_, pid_ammol_, pid_rotor_;
 
-    std::vector<double> pid_yaw_in_params_, pid_yaw_out_params_;
+    std::vector<double> pid_yaw_remote_in_params_, pid_yaw_remote_out_params_;
+    std::vector<double> pid_yaw_init_in_params_, pid_yaw_init_out_params_;
     std::vector<double> pid_pitch_in_params_, pid_pitch_out_params_;
     std::vector<double> pid_ammor_params_, pid_ammol_params_, pid_rotor_params_;
 
@@ -141,13 +143,8 @@ private:
     double yaw_angle_, pitch_angle_;
     double ammor_speed_, ammol_speed_, rotor_speed_;
 
-
-
-    // double yaw_in_kp_, yaw_in_ki_, yaw_in_kd_;
-    // double yaw_out_kp_, yaw_out_ki_, yaw_out_kd_;
-
-    // double pitch_in_kp_, pitch_in_ki_, pitch_in_kd_;
-    // double pitch_out_kp_, pitch_out_ki_, pitch_out_kd_;
+    bool follow_init_ = false;
+    double yaw_zero_angle_ = 7792;
 
 public:
     skider_excutor::msg::GimbalCommand gimbal_command_msg_;
