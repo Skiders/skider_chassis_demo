@@ -61,6 +61,12 @@ GimbalControlerDemoNode::GimbalControlerDemoNode(const rclcpp::NodeOptions & opt
     gimbal_state_subscription_ = gimbal_controler_demo_node_->create_subscription<skider_interface::msg::GimbalState>(
         "/skider/gimbal_state", 10, std::bind(&GimbalControlerDemoNode::gimbal_msg_callback, this, std::placeholders::_1));
 
+    RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Follow Init Timer : ");
+    follow_init_timer_ = gimbal_controler_demo_node_->create_wall_timer(1000ms, [this]() {
+
+        follow_init_ = true;
+    });
+
     RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Finish Init");
 
     yaw_angle_set_ = 0;
@@ -177,17 +183,23 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
 
             std::cout<<"yaw_relative: "<<yaw_relative<<std::endl;
 
-            //相差角度小于一定值，初始化完成
-            if(yaw_relative > -50 && yaw_relative < 50){
-                
-                //以当前imu为相对零点
-                yaw_angle_set_= imu_yaw_ ;
-                this->pid_yaw_init_out_.i_sum_limit_ = Limit(-5000, 5000) ;
-                this->pid_yaw_init_in_.i_sum_limit_ = Limit(-5000, 5000) ;
+            if(follow_init_ == true){
 
-                follow_init_ = true;
+                yaw_angle_set_= imu_yaw_ ;
 
             }
+
+            //相差角度小于一定值，初始化完成
+            // if(yaw_relative > -50 && yaw_relative < 50){
+                
+            //     //以当前imu为相对零点
+            //     yaw_angle_set_= imu_yaw_ ;
+            //     // this->pid_yaw_init_out_.i_sum_limit_ = Limit(-5000, 5000) ;
+            //     // this->pid_yaw_init_in_.i_sum_limit_ = Limit(-5000, 5000) ;
+
+            //     follow_init_ = true;
+
+            // }
         }
         else{
 
@@ -253,6 +265,7 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
         gimbal_command_msg_.ammol_current = 0;
         gimbal_command_msg_.rotor_current = 0;
 
+        follow_init_timer_->reset();
         follow_init_ = false;
 
     }

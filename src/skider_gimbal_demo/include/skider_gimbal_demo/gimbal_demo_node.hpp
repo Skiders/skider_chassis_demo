@@ -114,6 +114,7 @@ private:
     rclcpp::Publisher<skider_interface::msg::Debug>::SharedPtr debug_publisher_;
     skider_interface::msg::Debug debug_msg_;
 
+    rclcpp::TimerBase::SharedPtr follow_init_timer_;
 
 private:
     // imu
