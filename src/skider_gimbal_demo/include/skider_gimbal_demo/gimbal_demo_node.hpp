@@ -118,33 +118,40 @@ private:
 
 
 private:
+    // imu
     double imu_yaw_;
     double imu_pitch_;
     double imu_roll_;
-    
+    double w_pitch_;
+    double w_yaw_;
+
+    // remote
     double yaw_angle_set_;
     double pitch_angle_set_;
 
+
+    // PID
     PID pid_yaw_remote_in_, pid_yaw_remote_out_;
     PID pid_yaw_init_in_, pid_yaw_init_out_;
-    PID pid_pitch_in_, pid_pitch_out_;
+    PID pid_pitch_remote_in_, pid_pitch_remote_out_;
     PID pid_ammor_, pid_ammol_, pid_rotor_;
 
     std::vector<double> pid_yaw_remote_in_params_, pid_yaw_remote_out_params_;
     std::vector<double> pid_yaw_init_in_params_, pid_yaw_init_out_params_;
-    std::vector<double> pid_pitch_in_params_, pid_pitch_out_params_;
+    std::vector<double> pid_pitch_remote_in_params_, pid_pitch_remote_out_params_;
     std::vector<double> pid_ammor_params_, pid_ammol_params_, pid_rotor_params_;
 
-    double w_pitch_;
-    double w_yaw_;
-    double ammo_goal_speed_, rotor_goal_speed_;
 
-    //gimbal state feedback
+
+    // gimbal state feedback
     double yaw_angle_, pitch_angle_;
     double ammor_speed_, ammol_speed_, rotor_speed_;
 
+    // init & goal
     bool follow_init_ = false;
     double yaw_zero_angle_ = 7792;
+    double ammo_goal_speed_, rotor_goal_speed_;
+    //double imu_yaw_zero_ = 0;
 
 public:
     skider_excutor::msg::GimbalCommand gimbal_command_msg_;
