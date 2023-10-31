@@ -6,4 +6,6 @@ int16 ammor_current
 int16 ammol_current
 int16 rotor_current
 
+bool follow_init
+
 

@@ -181,11 +181,12 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
 
             gimbal_command_msg_.yaw_current = (int16_t)((int)(speed_limit(yaw_current, 30000)));
 
-            std::cout<<"yaw_relative: "<<yaw_relative<<std::endl;
+            //std::cout<<"yaw_relative: "<<yaw_relative<<std::endl;
 
             if(follow_init_ == true){
 
                 yaw_angle_set_= imu_yaw_ ;
+                gimbal_command_msg_.follow_init = true;
 
             }
 
@@ -223,7 +224,6 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
         double pitch_current = this->pid_pitch_remote_in_.calculate(pitch_w_goal, w_pitch_);
         gimbal_command_msg_.pitch_current = (int16_t)(speed_limit(pitch_current, 30000));
             
-        //std::cout<<pitch_angle_set_<<"\t"<<pitch_w_goal<<"\t"<<w_pitch_<<"\t"<<pitch_current<<std::endl;
         
         //debug
         // debug_msg_.header.stamp = gimbal_controler_demo_node_->get_clock()->now();
@@ -264,6 +264,7 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
         gimbal_command_msg_.ammor_current = 0;
         gimbal_command_msg_.ammol_current = 0;
         gimbal_command_msg_.rotor_current = 0;
+        gimbal_command_msg_.follow_init = false;
 
         follow_init_timer_->reset();
         follow_init_ = false;
@@ -279,6 +280,7 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
     gimbal_command_msg_.ammor_current = 0;
     gimbal_command_msg_.ammol_current = 0;
     gimbal_command_msg_.rotor_current = 0;
+    gimbal_command_msg_.follow_init = false;
 
 }
 
