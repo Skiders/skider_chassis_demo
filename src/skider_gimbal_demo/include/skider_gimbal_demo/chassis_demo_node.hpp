@@ -21,6 +21,7 @@
 #include <skider_excutor/msg/imu.hpp>
 #include <skider_excutor/msg/chassis_state.hpp>
 #include <skider_excutor/msg/gimbal_state.hpp>
+//#include "gimbal_demo_node.hpp"
 
 using namespace std::chrono_literals;
 
@@ -166,6 +167,9 @@ public:
     //gimbal state feedback
     double yaw_angle_, pitch_angle_;
     double ammor_speed_, ammol_speed_, rotor_speed_;
+
+    // extern bool follow_init_;
+
 
 };
 

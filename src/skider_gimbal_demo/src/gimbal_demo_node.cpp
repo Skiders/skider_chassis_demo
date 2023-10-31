@@ -48,11 +48,6 @@ GimbalControlerDemoNode::GimbalControlerDemoNode(const rclcpp::NodeOptions & opt
         joy_subscribe_topic_name_, 10, std::bind(&GimbalControlerDemoNode::joy_msg_callback, this, std::placeholders::_1));
 
 
-    // std::string shooter_output_publish_topic_name_("/skider/output/shooter");
-    // RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Init Gimbal Output Publisher : \"%s\"", shooter_output_publish_topic_name_.c_str());
-    // shooter_output_publisher_ = gimbal_controler_demo_node_->create_publisher<skider_excutor::msg::ShooterOutput>(
-    //     shooter_output_publish_topic_name_, 10);
-
     std::string gimbal_command_publish_topic_name_("/skider/command/gimbal");
     RCLCPP_INFO(gimbal_controler_demo_node_->get_logger(), "Init Gimbal Command Publisher : ");
     gimbal_command_publisher_ = gimbal_controler_demo_node_->create_publisher<skider_excutor::msg::GimbalCommand>(
@@ -176,23 +171,20 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
 
             double yaw_w_goal = this->pid_yaw_init_out_.calculate(yaw_init, yaw_angle_);
             double yaw_current = this->pid_yaw_init_in_.calculate(yaw_w_goal, w_yaw_);
-            // std::cout<<"yaw_init: "<<yaw_init<<std::endl;
-            // std::cout<<"yaw_angle_: "<<yaw_angle_<<std::endl;
-            // std::cout<<"yaw_w_goal: "<<yaw_w_goal<<std::endl;
-            // std::cout<<"w_yaw_: "<<w_yaw_<<std::endl;
-            // std::cout<<"yaw_current: "<<yaw_current<<std::endl;
 
-            std::cout<<"yaw_relative: "<<yaw_relative<<std::endl;
-            std::cout<<"follow_init_: "<<follow_init_<<std::endl;
 
             gimbal_command_msg_.yaw_current = (int16_t)((int)(speed_limit(yaw_current, 30000)));
 
+            std::cout<<"yaw_relative: "<<yaw_relative<<std::endl;
 
             //相差角度小于一定值，初始化完成
             if(yaw_relative > -50 && yaw_relative < 50){
                 
                 //以当前imu为相对零点
                 yaw_angle_set_= imu_yaw_ ;
+                this->pid_yaw_init_out_.i_sum_limit_ = Limit(-5000, 5000) ;
+                this->pid_yaw_init_in_.i_sum_limit_ = Limit(-5000, 5000) ;
+
                 follow_init_ = true;
 
             }
@@ -202,7 +194,6 @@ void GimbalControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & msg
 
 
             yaw_angle_set_ = aim_loop(yaw_angle_set_ + (-msg.axes[2])*0.01);
-            //std::cout<<"yaw_angle_set_: "<<yaw_angle_set_<<std::endl;
 
             double yaw_relative = get_relative_angle(yaw_angle_set_, imu_yaw_, 1);
             yaw_angle_set_ = imu_yaw_   + yaw_relative;

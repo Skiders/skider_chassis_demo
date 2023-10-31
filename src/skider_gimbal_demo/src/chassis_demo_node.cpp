@@ -144,16 +144,20 @@ void ChassisControlerDemoNode::loop_10000Hz()
 
     if ((button1_ == true)  ||  (button2_ == true)){       
 
-        //std::cout<<"calculating: "<<std::endl;
         //增加init判断
 
         double yaw_relative = get_relative_angle(yaw_zero_angle_, yaw_angle_);
         double yaw_angle_set_ = yaw_angle_ + yaw_relative;
 
         follow_w_ = pid_follow_.calculate(yaw_angle_set_, yaw_angle_);
-        // std::cout<<"yaw_angle_set_: "<<yaw_angle_set_<<std::endl;
-        // std::cout<<"yaw_angle_: "<<yaw_angle_<<std::endl;
-        // std::cout<<"follow_w_: "<<follow_w_<<std::endl;
+
+        double delta_yaw = yaw_relative / 4096 * M_PI;
+        vx_solve_ = vx_set_*cos(delta_yaw) - vy_set_*sin(delta_yaw);
+        vy_solve_ = -vx_set_*sin(delta_yaw) + vy_set_*cos(delta_yaw);
+
+        // std::cout<<"vx_set_*cos(imu_yaw_): "<<vx_set_*cos(imu_yaw_)<<std::endl;
+        // std::cout<<"-vy_set_*sin(imu_yaw_): "<<-vy_set_*sin(imu_yaw_)<<std::endl;
+
 
 
         chassis_speed_[0] = (-vx_solve_ - vy_solve_ + follow_w_);
@@ -172,12 +176,12 @@ void ChassisControlerDemoNode::loop_10000Hz()
             chassis_msg.current.push_back(chassis_current[i]);
 
         }
+        // std::cout<<"bool: "<<follow_init_<<std::endl;
 
 
     }
     else{
        
-        // std::cout<<"weak: "<<std::endl;
 
         for(int i=0; i<4; i++){
             chassis_msg.current.push_back(0);
@@ -200,13 +204,13 @@ void ChassisControlerDemoNode::joy_msg_callback(const sensor_msgs::msg::Joy & ms
 
         vx_set_ = msg.axes[1]*6000;
         vy_set_ = -msg.axes[0]*6000;
-        vx_solve_ = vx_set_;
-        vy_solve_ = vy_set_;
+
     }
     else{
        
-        vx_solve_ = 0;
-        vy_solve_ = 0;
+
+        vx_set_ =0;
+        vy_set_ =0;
     }
 
     int debug_index = 0;
@@ -220,7 +224,7 @@ void ChassisControlerDemoNode::imu_msg_callback(const skider_excutor::msg::Imu &
 {
     imu_yaw_ = msg.imu_yaw;
 
-    //vx xy
+
 
 }
 
@@ -248,7 +252,6 @@ void ChassisControlerDemoNode::gimbal_msg_callback(const skider_excutor::msg::Gi
     ammor_speed_ = msg.ammor_speed;
     ammol_speed_ = msg.ammol_speed;
     rotor_speed_ = msg.rotor_speed;
-    // std::cout<<"yaw_angle_: "<<yaw_angle_<<std::endl;
 
 
 }
